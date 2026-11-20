@@ -1,10 +1,10 @@
 [Setup]
 AppId=GeminiGuarder-Antigravity
 AppName=Gemini Guarder for Antigravity
-AppVersion=0.1.0
+AppVersion=0.1.1
 DefaultDirName={localappdata}\Programs\GeminiGuarder-Antigravity
 PrivilegesRequired=lowest
-OutputBaseFilename=GeminiGuarder-Antigravity-0.1.0-Setup
+OutputBaseFilename=GeminiGuarder-Antigravity-0.1.1-Setup
 OutputDir=dist
 DisableProgramGroupPage=yes
 Compression=lzma2

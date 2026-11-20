@@ -12,6 +12,10 @@ switch ($Action) {
         $powershell = Join-Path $env:WINDIR 'System32/WindowsPowerShell/v1.0/powershell.exe'
         $node = (Get-Command node.exe -ErrorAction Stop).Source
         $arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -File "' + $worker + '" -Node "' + $node + '"'
+        foreach ($tool in @('ffmpeg','ffprobe')) {
+            $command = Get-Command "$tool.exe" -ErrorAction SilentlyContinue
+            if ($command) { $arguments += ' -' + $tool + ' "' + $command.Source + '"' }
+        }
         $taskAction = New-ScheduledTaskAction -Execute $powershell -Argument $arguments -WorkingDirectory $PSScriptRoot
         $trigger = New-ScheduledTaskTrigger -AtLogOn -User $user
         $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited

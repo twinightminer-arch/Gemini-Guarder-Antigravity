@@ -29,3 +29,7 @@
 ## v0.1.0
 
 Windows 安装包和插件 ZIP 在 GitHub Releases。需要 Node.js 22 或更新版本。应用及壁纸设置继续保存在原用户数据目录。
+
+## v0.1.1
+
+登录任务继承安装时找到的 FFmpeg / FFprobe 路径。Gemini 固定使用本机专用 Chrome 用户资料中的 Default 配置，保留浏览器会话。Google 要求重新验证时仍需登录。

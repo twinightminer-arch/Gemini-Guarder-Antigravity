@@ -268,7 +268,7 @@ function Invoke-DockAction {
         $chrome=Join-Path $env:ProgramFiles 'Google/Chrome/Application/chrome.exe'
         if(-not(Test-Path -LiteralPath $chrome)){throw 'Google Chrome was not found'}
         $profileArg='--user-data-dir="'+$profile+'"'
-        Start-Process -FilePath $chrome -ArgumentList @($profileArg,'--no-first-run','--app=https://gemini.google.com/','--window-size=480,640') -WindowStyle Normal
+        Start-Process -FilePath $chrome -ArgumentList @($profileArg,'--profile-directory=Default','--no-first-run','--app=https://gemini.google.com/','--window-size=480,640') -WindowStyle Normal
         for($attempt=0;$attempt -lt 36;$attempt++){
             Start-Sleep -Milliseconds 250
             $windows=@(ChromeProcesses | ForEach-Object {Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue} | Where-Object MainWindowHandle)

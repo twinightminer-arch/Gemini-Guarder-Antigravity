@@ -1,6 +1,8 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$Node)
+param([Parameter(Mandatory)][string]$Node,[string]$FFmpeg,[string]$FFprobe)
 $ErrorActionPreference='Stop'
+if ($FFmpeg) { $env:GUARDER_FFMPEG=$FFmpeg }
+if ($FFprobe) { $env:GUARDER_FFPROBE=$FFprobe }
 $root=Join-Path $env:LOCALAPPDATA 'Guarder-Antigravity'
 $stop=Join-Path $root 'stop'
 $runner=Join-Path $PSScriptRoot 'run.mjs'

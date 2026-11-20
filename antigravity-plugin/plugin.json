@@ -2,6 +2,6 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "gemini-guarder",
   "displayName": "Gemini Guarder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local Gemini Guarder companion for wallpaper, selection translation, vocabulary, and interface settings."
 }
