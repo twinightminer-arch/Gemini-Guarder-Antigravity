@@ -38,7 +38,20 @@ function ensureDockWatcher(){
 const hostDock=async rect=>{
   const args=['-NoProfile','-File',dockScript,'-Action',rect?'show':'hide'];
   if(rect)for(const key of ['Viewport','X','Y','Width','Height']){const value=rect[key];if(!Number.isInteger(value)||Math.abs(value)>12000)throw Error('Invalid Gemini geometry');args.push('-'+key,String(value));}
-  await runFile('powershell.exe',args,{windowsHide:true,timeout:15000});
+  await new Promise((resolve,reject)=>{
+    // Chrome can outlive PowerShell. Wait for the script process, not its inherited pipes.
+    const child=spawn('powershell.exe',args,{windowsHide:true,stdio:['ignore','ignore','inherit']});
+    const timer=setTimeout(()=>{
+      child.kill();
+      reject(Error('Gemini window operation timed out'));
+    },40000);
+    child.once('error',error=>{clearTimeout(timer);reject(error);});
+    child.once('exit',code=>{
+      clearTimeout(timer);
+      if(code===0)resolve();
+      else reject(Error('Gemini window script exited with code '+code));
+    });
+  });
 };
 async function sendDockCommand(command){
   if(!dockWatcher)return false;
@@ -190,7 +203,7 @@ function updateDock(session,geometry){
     try{
       await showDock(geometry);
     }catch(error){
-      console.error((error.stderr||error.message).split('\n')[0]);
+      console.error('Gemini:',error.message);
       if(revision===session.dockRevision){
         void session.connection.evaluate('globalThis.guarder?.dockStatus(false)').catch(()=>{});
       }

@@ -235,6 +235,15 @@ function ChromeProcesses {
         $_.CommandLine -and $_.CommandLine.Contains($profile) -and $_.CommandLine -notmatch '--type='
     }
 }
+function Find-Chrome {
+    foreach($root in @($env:ProgramFiles,${env:ProgramFiles(x86)},$env:LOCALAPPDATA)){
+        if($root){
+            $candidate=Join-Path $root 'Google/Chrome/Application/chrome.exe'
+            if(Test-Path -LiteralPath $candidate -PathType Leaf){return $candidate}
+        }
+    }
+    throw 'Google Chrome was not found'
+}
 function Invoke-DockAction {
     $browser=@(ChromeProcesses)
     $record=Read-Record
@@ -263,13 +272,15 @@ function Invoke-DockAction {
     $parent=$parents[0].MainWindowHandle
     $geometry=@{Viewport=$Viewport;X=$X;Y=$Y;Width=$Width;Height=$Height}
     $slot=Get-Slot $parent $geometry
-    $detached=$child -ne [IntPtr]::Zero -and $record.geometry -and [GuarderDock]::GetOwner($child,-8) -eq [IntPtr]::Zero
+    $detached=$child -ne [IntPtr]::Zero -and $record.geometry -and
+        $record.parentProcessId -eq $parents[0].Id -and [long]$record.parent -eq $parent.ToInt64() -and
+        [GuarderDock]::GetOwner($child,-8) -eq [IntPtr]::Zero
     if($child -eq [IntPtr]::Zero){
-        $chrome=Join-Path $env:ProgramFiles 'Google/Chrome/Application/chrome.exe'
-        if(-not(Test-Path -LiteralPath $chrome)){throw 'Google Chrome was not found'}
+        $chrome=Find-Chrome
         $profileArg='--user-data-dir="'+$profile+'"'
         Start-Process -FilePath $chrome -ArgumentList @($profileArg,'--profile-directory=Default','--no-first-run','--app=https://gemini.google.com/','--window-size=480,640') -WindowStyle Normal
-        for($attempt=0;$attempt -lt 36;$attempt++){
+        $deadline=[DateTime]::UtcNow.AddSeconds(20)
+        do {
             Start-Sleep -Milliseconds 250
             $windows=@(ChromeProcesses | ForEach-Object {Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue} | Where-Object MainWindowHandle)
             if($windows.Count -eq 1){
@@ -277,7 +288,7 @@ function Invoke-DockAction {
                 $record=@{processId=$windows[0].Id}
                 break
             }
-        }
+        } until ([DateTime]::UtcNow -ge $deadline)
         if($child -eq [IntPtr]::Zero){throw 'Gemini Chrome window did not appear'}
     }
     if(-not $detached){Set-DockedWindow $child $parent $slot $true}
